@@ -1,0 +1,2044 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Liquid Glass Arcade - 液态玻璃游戏中心</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --glass-bg: rgba(255, 255, 255, 0.08);
+            --glass-border: rgba(255, 255, 255, 0.2);
+            --glass-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
+            --neon-pink: #ff2d95;
+            --neon-blue: #00f3ff;
+            --neon-purple: #b300ff;
+            --neon-green: #39ff14;
+            --neon-yellow: #fff01f;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #000;
+            color: #fff;
+            overflow-x: hidden;
+            position: relative;
+        }
+
+        /* 动态背景层 */
+        .bg-layer {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-size: cover;
+            background-position: center;
+            z-index: -2;
+            transition: opacity 1s;
+        }
+
+        .bg-gradient {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, rgba(255,0,255,0.2), rgba(0,255,255,0.2));
+            z-index: -1;
+            backdrop-filter: blur(0px);
+        }
+
+        /* Liquid Glass 导航 */
+        nav {
+            position: fixed;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: var(--glass-bg);
+            backdrop-filter: blur(20px) saturate(180%);
+            border: 1px solid var(--glass-border);
+            border-radius: 50px;
+            padding: 1rem 2rem;
+            z-index: 1000;
+            box-shadow: var(--glass-shadow);
+            width: 90%;
+            max-width: 1200px;
+        }
+
+        .nav-content {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .logo {
+            font-size: 1.5rem;
+            font-weight: 800;
+            background: linear-gradient(45deg, var(--neon-pink), var(--neon-blue));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            text-shadow: 0 0 30px rgba(255,45,149,0.5);
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 1.5rem;
+            list-style: none;
+        }
+
+        .nav-links a {
+            color: rgba(255,255,255,0.9);
+            text-decoration: none;
+            font-weight: 500;
+            transition: all 0.3s;
+            padding: 0.5rem 1rem;
+            border-radius: 20px;
+            background: rgba(255,255,255,0.05);
+        }
+
+        .nav-links a:hover {
+            background: rgba(255,255,255,0.2);
+            transform: translateY(-2px);
+        }
+
+        .mobile-menu {
+            display: none;
+            flex-direction: column;
+            gap: 4px;
+            cursor: pointer;
+        }
+
+        .mobile-menu span {
+            width: 25px;
+            height: 3px;
+            background: #fff;
+            border-radius: 2px;
+            transition: 0.3s;
+        }
+
+        /* 主容器 */
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 8rem 1rem 2rem;
+        }
+
+        /* Hero区域 - Liquid Glass */
+        .hero {
+            text-align: center;
+            padding: 3rem;
+            background: var(--glass-bg);
+            backdrop-filter: blur(20px) saturate(180%);
+            border: 1px solid var(--glass-border);
+            border-radius: 40px;
+            margin-bottom: 3rem;
+            box-shadow: var(--glass-shadow);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .hero::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle, rgba(255,255,255,0.1) 1px, transparent 1px);
+            background-size: 20px 20px;
+            opacity: 0.3;
+        }
+
+        .hero h1 {
+            font-size: clamp(2.5rem, 8vw, 5rem);
+            margin-bottom: 1rem;
+            background: linear-gradient(135deg, #fff, var(--neon-blue), var(--neon-pink));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            position: relative;
+            z-index: 1;
+        }
+
+        .hero p {
+            font-size: 1.2rem;
+            color: rgba(255,255,255,0.8);
+            position: relative;
+            z-index: 1;
+        }
+
+        /* 游戏选择器 - Liquid Glass Tabs */
+        .game-tabs {
+            display: flex;
+            gap: 1rem;
+            overflow-x: auto;
+            padding: 2rem;
+            background: var(--glass-bg);
+            backdrop-filter: blur(20px);
+            border: 1px solid var(--glass-border);
+            border-radius: 30px;
+            margin-bottom: 2rem;
+            box-shadow: var(--glass-shadow);
+            scrollbar-width: none;
+        }
+
+        .game-tabs::-webkit-scrollbar {
+            display: none;
+        }
+
+        .tab-btn {
+            flex-shrink: 0;
+            padding: 1rem 2rem;
+            background: rgba(255,255,255,0.05);
+            border: 1px solid rgba(255,255,255,0.1);
+            color: #fff;
+            border-radius: 20px;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-weight: 600;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .tab-btn:hover {
+            transform: translateY(-3px);
+            background: rgba(255,255,255,0.15);
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+        }
+
+        .tab-btn.active {
+            background: linear-gradient(135deg, rgba(255,45,149,0.6), rgba(179,0,255,0.6));
+            border-color: transparent;
+            box-shadow: 0 0 30px rgba(255,45,149,0.4);
+        }
+
+        /* 游戏主区域 - Liquid Glass Game Container */
+        .game-stage {
+            background: var(--glass-bg);
+            backdrop-filter: blur(30px) saturate(200%);
+            border: 1px solid var(--glass-border);
+            border-radius: 40px;
+            padding: 2rem;
+            box-shadow: var(--glass-shadow);
+            min-height: 700px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .game-stage::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 1px;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.4), transparent);
+        }
+
+        .game-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.5rem;
+            flex-wrap: wrap;
+            gap: 1rem;
+        }
+
+        .game-title {
+            font-size: 2rem;
+            background: linear-gradient(90deg, var(--neon-blue), var(--neon-green));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .game-stats {
+            display: flex;
+            gap: 2rem;
+            font-size: 1.2rem;
+        }
+
+        .stat-item {
+            background: rgba(0,0,0,0.3);
+            padding: 0.5rem 1.5rem;
+            border-radius: 20px;
+            border: 1px solid rgba(255,255,255,0.1);
+        }
+
+        .stat-label {
+            font-size: 0.8rem;
+            opacity: 0.7;
+            margin-right: 0.5rem;
+        }
+
+        .stat-value {
+            font-weight: bold;
+            color: var(--neon-yellow);
+        }
+
+        /* Canvas 容器 */
+        .canvas-container {
+            width: 100%;
+            height: 600px;
+            background: rgba(0,0,0,0.4);
+            border-radius: 20px;
+            overflow: hidden;
+            position: relative;
+            border: 1px solid rgba(255,255,255,0.1);
+            box-shadow: inset 0 0 50px rgba(0,0,0,0.5);
+        }
+
+        canvas {
+            display: block;
+            width: 100%;
+            height: 100%;
+        }
+
+        /* 游戏控制按钮 */
+        .game-controls {
+            display: flex;
+            gap: 1rem;
+            margin-top: 1.5rem;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+
+        .btn {
+            padding: 1rem 2rem;
+            background: linear-gradient(135deg, rgba(0,243,255,0.8), rgba(0,100,255,0.8));
+            border: none;
+            color: #fff;
+            border-radius: 50px;
+            cursor: pointer;
+            font-weight: bold;
+            font-size: 1rem;
+            transition: all 0.3s;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255,255,255,0.3);
+            box-shadow: 0 5px 20px rgba(0,243,255,0.3);
+        }
+
+        .btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 30px rgba(0,243,255,0.5);
+        }
+
+        .btn.secondary {
+            background: rgba(255,255,255,0.1);
+            box-shadow: none;
+        }
+
+        /* 游戏覆盖层 */
+        .overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.85);
+            backdrop-filter: blur(10px);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 10;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.3s;
+            border-radius: 20px;
+        }
+
+        .overlay.show {
+            opacity: 1;
+            pointer-events: all;
+        }
+
+        .overlay h2 {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+            background: linear-gradient(45deg, var(--neon-pink), var(--neon-yellow));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .overlay p {
+            font-size: 1.5rem;
+            margin-bottom: 2rem;
+            color: rgba(255,255,255,0.8);
+        }
+
+        /* 响应式设计 */
+        @media (max-width: 768px) {
+            .nav-links {
+                display: none;
+                position: absolute;
+                top: 100%;
+                left: 0;
+                width: 100%;
+                background: rgba(20,20,30,0.95);
+                flex-direction: column;
+                padding: 1rem;
+                border-radius: 20px;
+                margin-top: 1rem;
+            }
+
+            .nav-links.active {
+                display: flex;
+            }
+
+            .mobile-menu {
+                display: flex;
+            }
+
+            .hero {
+                padding: 2rem 1rem;
+                border-radius: 30px;
+            }
+
+            .game-stage {
+                padding: 1rem;
+                border-radius: 30px;
+                min-height: 500px;
+            }
+
+            .canvas-container {
+                height: 400px;
+            }
+
+            .game-tabs {
+                padding: 1rem;
+                border-radius: 20px;
+            }
+
+            .tab-btn {
+                padding: 0.8rem 1.5rem;
+                font-size: 0.9rem;
+            }
+        }
+
+        /* 特定游戏样式 */
+        .tetris-cell {
+            box-shadow: inset 0 0 5px rgba(255,255,255,0.3);
+        }
+
+        .ra-unit {
+            filter: drop-shadow(0 0 10px rgba(255,45,149,0.5));
+        }
+
+        /* 加载动画 */
+        .loader {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: #000;
+            z-index: 9999;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            transition: opacity 0.5s;
+        }
+
+        .loader-glass {
+            width: 100px;
+            height: 100px;
+            background: linear-gradient(135deg, rgba(255,45,149,0.5), rgba(0,243,255,0.5));
+            border-radius: 30px;
+            backdrop-filter: blur(10px);
+            animation: rotate 2s linear infinite;
+            box-shadow: 0 0 50px rgba(0,243,255,0.5);
+        }
+
+        @keyframes rotate {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+
+        .hidden {
+            opacity: 0;
+            pointer-events: none;
+        }
+    </style>
+</head>
+<body>
+    <!-- 加载画面 -->
+    <div class="loader" id="loader">
+        <div class="loader-glass"></div>
+    </div>
+
+    <!-- 动态背景 -->
+    <div class="bg-layer" id="bgLayer" style="background-image: url('https://kimi-web-img.moonshot.cn/img/img.freepik.com/a59128eeffb574c3e7796a71afb3d1e2cbd9c41d.jpg');"></div>
+    <div class="bg-gradient"></div>
+
+    <!-- 导航 -->
+    <nav>
+        <div class="nav-content">
+            <div class="logo">🎮 Liquid Glass Arcade</div>
+            <ul class="nav-links" id="navLinks">
+                <li><a href="#" onclick="showHome()">主页</a></li>
+                <li><a href="#games">游戏库</a></li>
+                <li><a href="#" onclick="toggleFullscreen()">全屏</a></li>
+            </ul>
+            <div class="mobile-menu" id="mobileMenu">
+                <span></span>
+                <span></span>
+                <span></span>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container">
+        <!-- Hero -->
+        <section class="hero">
+            <h1>经典游戏合集</h1>
+            <p>9款超级经典游戏 | Liquid Glass 视觉体验 | 全平台适配</p>
+        </section>
+
+        <!-- 游戏选择标签 -->
+        <div class="game-tabs" id="gameTabs">
+            <button class="tab-btn active" onclick="switchGame('tetris', 'https://kimi-web-img.moonshot.cn/img/thumbs.dreamstime.com/94d4e3d9a4e304b339219f431b068138ac75dff8.jpg')">俄罗斯方块</button>
+            <button class="tab-btn" onclick="switchGame('redalert', 'https://kimi-web-img.moonshot.cn/img/img.freepik.com/9e7f60820eb82543d721ec1c4e93db2fcdc77d54.jpg')">红警95 Lite</button>
+            <button class="tab-btn" onclick="switchGame('snake', 'https://kimi-web-img.moonshot.cn/img/thumbs.dreamstime.com/21341d6707789ee38438a34e99edfe94ce328a8b.jpg')">贪吃蛇</button>
+            <button class="tab-btn" onclick="switchGame('shooter', 'https://kimi-web-img.moonshot.cn/img/static.vecteezy.com/c815e1d415a319a6b3b18cf982a6fb0e08f76aac.jpg')">太空射击</button>
+            <button class="tab-btn" onclick="switchGame('memory', 'https://kimi-web-img.moonshot.cn/img/img.freepik.com/290c7c2f4dde4562076bbb462cdd786910915382.jpg')">记忆翻牌</button>
+            <button class="tab-btn" onclick="switchGame('breakout', 'https://kimi-web-img.moonshot.cn/img/img.freepik.com/a59128eeffb574c3e7796a71afb3d1e2cbd9c41d.jpg')">霓虹打砖块</button>
+            <button class="tab-btn" onclick="switchGame('colorrush', 'https://kimi-web-img.moonshot.cn/img/thumbs.dreamstime.com/703607fe85a01ea20316c373be7182bdf856e3d2.jpg')">色彩极速</button>
+            <button class="tab-btn" onclick="switchGame('pacman', 'https://kimi-web-img.moonshot.cn/img/as1.ftcdn.net/261bfc7c56445639e926c4be34c0418d6764f59e.jpg')">吃豆人</button>
+            <button class="tab-btn" onclick="switchGame('particles', 'https://kimi-web-img.moonshot.cn/img/thumbs.dreamstime.com/703607fe85a01ea20316c373be7182bdf856e3d2.jpg')">粒子绘画</button>
+        </div>
+
+        <!-- 游戏舞台 -->
+        <div class="game-stage" id="gameStage">
+            <div class="game-header">
+                <h2 class="game-title" id="gameTitle">俄罗斯方块</h2>
+                <div class="game-stats">
+                    <div class="stat-item">
+                        <span class="stat-label">得分</span>
+                        <span class="stat-value" id="score">0</span>
+                    </div>
+                    <div class="stat-item">
+                        <span class="stat-label">等级</span>
+                        <span class="stat-value" id="level">1</span>
+                    </div>
+                    <div class="stat-item">
+                        <span class="stat-label">最高分</span>
+                        <span class="stat-value" id="highScore">0</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="canvas-container">
+                <canvas id="gameCanvas"></canvas>
+                <div class="overlay" id="overlay">
+                    <h2 id="overlayTitle">游戏结束</h2>
+                    <p id="overlayText">最终得分: 0</p>
+                    <button class="btn" onclick="startGame()">重新开始</button>
+                </div>
+            </div>
+
+            <div class="game-controls">
+                <button class="btn" onclick="startGame()">新游戏</button>
+                <button class="btn secondary" onclick="togglePause()">暂停/继续</button>
+                <button class="btn secondary" onclick="toggleMute()">🔊 声音</button>
+                <div id="mobileControls" style="display:none; width:100%; margin-top:1rem;">
+                    <p style="text-align:center; opacity:0.7;">移动端：点击屏幕左右侧移动，点击中央旋转/射击</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // 游戏状态
+        let currentGame = 'tetris';
+        let gameInstance = null;
+        let isPaused = false;
+        let isMuted = false;
+        let score = 0;
+        let level = 1;
+        let highScores = JSON.parse(localStorage.getItem('liquidGlassHighScores')) || {};
+        
+        // 初始化
+        window.onload = () => {
+            setTimeout(() => {
+                document.getElementById('loader').classList.add('hidden');
+                initGame('tetris');
+            }, 1000);
+        };
+
+        // 移动端菜单
+        document.getElementById('mobileMenu').addEventListener('click', () => {
+            document.getElementById('navLinks').classList.toggle('active');
+        });
+
+        // 切换游戏
+        function switchGame(game, bgUrl) {
+            currentGame = game;
+            isPaused = false;
+            
+            // 更新背景
+            if (bgUrl) {
+                document.getElementById('bgLayer').style.backgroundImage = `url('${bgUrl}')`;
+            }
+            
+            // 更新标签状态
+            document.querySelectorAll('.tab-btn').forEach(btn => {
+                btn.classList.remove('active');
+                if (btn.textContent.includes(getGameName(game))) {
+                    btn.classList.add('active');
+                }
+            });
+            
+            document.getElementById('gameTitle').textContent = getGameName(game);
+            document.getElementById('mobileControls').style.display = /iPhone|iPad|Android/.test(navigator.userAgent) ? 'block' : 'none';
+            
+            initGame(game);
+        }
+
+        function getGameName(game) {
+            const names = {
+                'tetris': '俄罗斯方块',
+                'redalert': '红警95 Lite',
+                'snake': '贪吃蛇',
+                'shooter': '太空射击',
+                'memory': '记忆翻牌',
+                'breakout': '霓虹打砖块',
+                'colorrush': '色彩极速',
+                'pacman': '吃豆人',
+                'particles': '粒子绘画'
+            };
+            return names[game] || game;
+        }
+
+        function initGame(game) {
+            const canvas = document.getElementById('gameCanvas');
+            const ctx = canvas.getContext('2d');
+            const container = document.querySelector('.canvas-container');
+            
+            // 设置canvas尺寸
+            canvas.width = container.offsetWidth;
+            canvas.height = container.offsetHeight;
+            
+            // 重置分数
+            score = 0;
+            level = 1;
+            updateScore();
+            document.getElementById('overlay').classList.remove('show');
+            
+            // 清除旧游戏
+            if (gameInstance) {
+                cancelAnimationFrame(gameInstance);
+                clearInterval(gameInstance);
+            }
+            
+            // 启动对应游戏
+            switch(game) {
+                case 'tetris': initTetris(canvas, ctx); break;
+                case 'redalert': initRedAlert(canvas, ctx); break;
+                case 'snake': initSnake(canvas, ctx); break;
+                case 'shooter': initShooter(canvas, ctx); break;
+                case 'memory': initMemory(canvas, ctx); break;
+                case 'breakout': initBreakout(canvas, ctx); break;
+                case 'colorrush': initColorRush(canvas, ctx); break;
+                case 'pacman': initPacman(canvas, ctx); break;
+                case 'particles': initParticles(canvas, ctx); break;
+            }
+        }
+
+        // 1. 俄罗斯方块 (Tetris)
+        function initTetris(canvas, ctx) {
+            const cols = 10, rows = 20;
+            const blockSize = Math.min(canvas.width / cols, canvas.height / rows) * 0.9;
+            const offsetX = (canvas.width - cols * blockSize) / 2;
+            const offsetY = (canvas.height - rows * blockSize) / 2;
+            
+            const pieces = [
+                [[1,1,1,1]], // I
+                [[1,1,1],[0,1,0]], // T
+                [[1,1,1],[1,0,0]], // L
+                [[1,1,1],[0,0,1]], // J
+                [[1,1],[1,1]], // O
+                [[0,1,1],[1,1,0]], // S
+                [[1,1,0],[0,1,1]]  // Z
+            ];
+            
+            const colors = ['#00f3ff', '#b300ff', '#ff2d95', '#39ff14', '#fff01f', '#ff6600', '#ff0066'];
+            
+            let board = Array(rows).fill().map(() => Array(cols).fill(0));
+            let currentPiece = null;
+            let currentColor = 0;
+            let dropInterval = 1000;
+            let lastDrop = 0;
+            
+            function newPiece() {
+                const type = Math.floor(Math.random() * pieces.length);
+                currentPiece = {
+                    x: Math.floor(cols / 2) - 1,
+                    y: 0,
+                    shape: pieces[type],
+                    color: type
+                };
+                currentColor = colors[type];
+            }
+            
+            function rotate(piece) {
+                const newShape = piece.shape[0].map((_, i) => 
+                    piece.shape.map(row => row[i]).reverse()
+                );
+                return {...piece, shape: newShape};
+            }
+            
+            function collision(piece, dx=0, dy=0) {
+                for (let y = 0; y < piece.shape.length; y++) {
+                    for (let x = 0; x < piece.shape[y].length; x++) {
+                        if (piece.shape[y][x]) {
+                            const nx = piece.x + x + dx;
+                            const ny = piece.y + y + dy;
+                            if (nx < 0 || nx >= cols || ny >= rows) return true;
+                            if (ny >= 0 && board[ny][nx]) return true;
+                        }
+                    }
+                }
+                return false;
+            }
+            
+            function merge() {
+                currentPiece.shape.forEach((row, y) => {
+                    row.forEach((val, x) => {
+                        if (val) {
+                            const ny = currentPiece.y + y;
+                            if (ny >= 0) board[ny][currentPiece.x + x] = currentColor;
+                        }
+                    });
+                });
+            }
+            
+            function clearLines() {
+                let lines = 0;
+                for (let y = rows - 1; y >= 0; y--) {
+                    if (board[y].every(cell => cell !== 0)) {
+                        board.splice(y, 1);
+                        board.unshift(Array(cols).fill(0));
+                        lines++;
+                        y++;
+                    }
+                }
+                if (lines > 0) {
+                    score += lines * 100 * level;
+                    level = Math.floor(score / 1000) + 1;
+                    dropInterval = Math.max(100, 1000 - (level - 1) * 100);
+                    updateScore();
+                }
+            }
+            
+            function draw() {
+                ctx.fillStyle = 'rgba(0,0,0,0.3)';
+                ctx.fillRect(0, 0, canvas.width, canvas.height);
+                
+                // 绘制网格背景
+                ctx.strokeStyle = 'rgba(255,255,255,0.05)';
+                ctx.lineWidth = 1;
+                for (let i = 0; i <= cols; i++) {
+                    ctx.beginPath();
+                    ctx.moveTo(offsetX + i * blockSize, offsetY);
+                    ctx.lineTo(offsetX + i * blockSize, offsetY + rows * blockSize);
+                    ctx.stroke();
+                }
+                for (let i = 0; i <= rows; i++) {
+                    ctx.beginPath();
+                    ctx.moveTo(offsetX, offsetY + i * blockSize);
+                    ctx.lineTo(offsetX + cols * blockSize, offsetY + i * blockSize);
+                    ctx.stroke();
+                }
+                
+                // 绘制已固定的方块
+                board.forEach((row, y) => {
+                    row.forEach((color, x) => {
+                        if (color) {
+                            drawBlock(x, y, color);
+                        }
+                    });
+                });
+                
+                // 绘制当前方块
+                if (currentPiece) {
+                    ctx.globalAlpha = 0.3;
+                    // 绘制阴影
+                    let ghostY = currentPiece.y;
+                    while (!collision({...currentPiece, y: ghostY + 1})) ghostY++;
+                    currentPiece.shape.forEach((row, y) => {
+                        row.forEach((val, x) => {
+                            if (val) drawBlock(currentPiece.x + x, ghostY + y, currentColor, true);
+                        });
+                    });
+                    ctx.globalAlpha = 1;
+                    
+                    // 绘制实体
+                    currentPiece.shape.forEach((row, y) => {
+                        row.forEach((val, x) => {
+                            if (val) drawBlock(currentPiece.x + x, currentPiece.y + y, currentColor);
+                        });
+                    });
+                }
+            }
+            
+            function drawBlock(x, y, color, isGhost=false) {
+                const px = offsetX + x * blockSize;
+                const py = offsetY + y * blockSize;
+                
+                // Liquid Glass 效果
+                if (!isGhost) {
+                    const gradient = ctx.createLinearGradient(px, py, px + blockSize, py + blockSize);
+                    gradient.addColorStop(0, color);
+                    gradient.addColorStop(1, adjustColor(color, -30));
+                    ctx.fillStyle = gradient;
+                    
+                    ctx.shadowBlur = 20;
+                    ctx.shadowColor = color;
+                    ctx.fillRect(px + 2, py + 2, blockSize - 4, blockSize - 4);
+                    ctx.shadowBlur = 0;
+                    
+                    // 高光
+                    ctx.fillStyle = 'rgba(255,255,255,0.3)';
+                    ctx.fillRect(px + 4, py + 4, blockSize - 12, 4);
+                } else {
+                    ctx.strokeStyle = color;
+                    ctx.strokeRect(px + 2, py + 2, blockSize - 4, blockSize - 4);
+                }
+            }
+            
+            function adjustColor(color, amount) {
+                // 简单的颜色调整
+                return color;
+            }
+            
+            function update(timestamp) {
+                if (!isPaused) {
+                    if (timestamp - lastDrop > dropInterval) {
+                        if (!currentPiece) newPiece();
+                        if (!collision(currentPiece, 0, 1)) {
+                            currentPiece.y++;
+                        } else {
+                            merge();
+                            clearLines();
+                            newPiece();
+                            if (collision(currentPiece)) {
+                                gameOver();
+                                return;
+                            }
+                        }
+                        lastDrop = timestamp;
+                    }
+                    draw();
+                }
+                gameInstance = requestAnimationFrame(update);
+            }
+            
+            // 控制
+            function handleKey(e) {
+                if (isPaused) return;
+                switch(e.key) {
+                    case 'ArrowLeft': 
+                        if (!collision(currentPiece, -1, 0)) currentPiece.x--;
+                        break;
+                    case 'ArrowRight':
+                        if (!collision(currentPiece, 1, 0)) currentPiece.x++;
+                        break;
+                    case 'ArrowDown':
+                        if (!collision(currentPiece, 0, 1)) currentPiece.y++;
+                        break;
+                    case 'ArrowUp':
+                        const rotated = rotate(currentPiece);
+                        if (!collision(rotated)) currentPiece = rotated;
+                        break;
+                    case ' ':
+                        while (!collision(currentPiece, 0, 1)) currentPiece.y++;
+                        break;
+                }
+            }
+            
+            document.onkeydown = handleKey;
+            
+            // 触摸控制
+            let touchStartX = 0;
+            canvas.ontouchstart = (e) => {
+                touchStartX = e.touches[0].clientX;
+            };
+            canvas.ontouchend = (e) => {
+                const diff = e.changedTouches[0].clientX - touchStartX;
+                if (Math.abs(diff) < 30) {
+                    // 点击 - 旋转
+                    const rotated = rotate(currentPiece);
+                    if (!collision(rotated)) currentPiece = rotated;
+                } else if (diff > 0) {
+                    if (!collision(currentPiece, 1, 0)) currentPiece.x++;
+                } else {
+                    if (!collision(currentPiece, -1, 0)) currentPiece.x--;
+                }
+            };
+            
+            newPiece();
+            update(0);
+        }
+
+        // 2. 红警95 Lite (简化版RTS)
+        function initRedAlert(canvas, ctx) {
+            let units = [];
+            let enemies = [];
+            let buildings = [];
+            let resources = 1000;
+            let gameTime = 0;
+            
+            class Unit {
+                constructor(x, y, isEnemy=false) {
+                    this.x = x;
+                    this.y = y;
+                    this.hp = 100;
+                    this.isEnemy = isEnemy;
+                    this.target = null;
+                    this.speed = isEnemy ? 0.5 : 1;
+                    this.lastShot = 0;
+                }
+                
+                update() {
+                    // 寻找目标
+                    if (!this.target || this.target.hp <= 0) {
+                        const targets = this.isEnemy ? units : enemies;
+                        if (targets.length > 0) {
+                            this.target = targets.reduce((closest, unit) => {
+                                const dist = Math.hypot(unit.x - this.x, unit.y - this.y);
+                                return dist < closest.dist ? {unit, dist} : closest;
+                            }, {dist: Infinity}).unit;
+                        }
+                    }
+                    
+                    // 移动和攻击
+                    if (this.target) {
+                        const dx = this.target.x - this.x;
+                        const dy = this.target.y - this.y;
+                        const dist = Math.hypot(dx, dy);
+                        
+                        if (dist > 60) {
+                            this.x += (dx / dist) * this.speed;
+                            this.y += (dy / dist) * this.speed;
+                        } else {
+                            // 攻击
+                            if (Date.now() - this.lastShot > 1000) {
+                                this.target.hp -= 20;
+                                // 绘制激光
+                                ctx.beginPath();
+                                ctx.strokeStyle = this.isEnemy ? '#ff0000' : '#00ff00';
+                                ctx.lineWidth = 2;
+                                ctx.moveTo(this.x, this.y);
+                                ctx.lineTo(this.target.x, this.target.y);
+                                ctx.stroke();
+                                this.lastShot = Date.now();
+                            }
+                        }
+                    }
+                }
+                
+                draw() {
+                    // 绘制坦克（Liquid Glass风格）
+                    ctx.save();
+                    ctx.translate(this.x, this.y);
+                    
+                    // 阴影
+                    ctx.fillStyle = 'rgba(0,0,0,0.3)';
+                    ctx.beginPath();
+                    ctx.ellipse(0, 15, 15, 8, 0, 0, Math.PI * 2);
+                    ctx.fill();
+                    
+                    // 坦克身体
+                    const gradient = ctx.createRadialGradient(-5, -5, 0, 0, 0, 20);
+                    if (this.isEnemy) {
+                        gradient.addColorStop(0, '#ff6b6b');
+                        gradient.addColorStop(1, '#c92a2a');
+                    } else {
+                        gradient.addColorStop(0, '#51cf66');
+                        gradient.addColorStop(1, '#2b8a3e');
+                    }
+                    
+                    ctx.fillStyle = gradient;
+                    ctx.beginPath();
+                    ctx.roundRect(-15, -10, 30, 20, 5);
+                    ctx.fill();
+                    
+                    // 炮塔
+                    ctx.fillStyle = this.isEnemy ? '#ff8787' : '#69db7c';
+                    ctx.beginPath();
+                    ctx.arc(0, 0, 8, 0, Math.PI * 2);
+                    ctx.fill();
+                    
+                    // 炮管
+                    if (this.target) {
+                        const angle = Math.atan2(this.target.y - this.y, this.target.x - this.x);
+                        ctx.rotate(angle);
+                        ctx.fillStyle = '#495057';
+                        ctx.fillRect(0, -3, 25, 6);
+                    }
+                    
+                    // 血条
+                    ctx.restore();
+                    ctx.fillStyle = '#ff0000';
+                    ctx.fillRect(this.x - 15, this.y - 25, 30, 4);
+                    ctx.fillStyle = '#00ff00';
+                    ctx.fillRect(this.x - 15, this.y - 25, 30 * (this.hp / 100), 4);
+                }
+            }
+            
+            // 初始化
+            units.push(new Unit(100, canvas.height/2));
+            units.push(new Unit(150, canvas.height/2 + 50));
+            
+            // 基地
+            buildings.push({x: 50, y: canvas.height/2, hp: 500, type: 'base'});
+            
+            function spawnEnemy() {
+                if (Math.random() < 0.02 && enemies.length < 5 + level) {
+                    enemies.push(new Unit(canvas.width - 50, Math.random() * canvas.height, true));
+                }
+            }
+            
+            function draw() {
+                ctx.fillStyle = 'rgba(0,20,0,0.2)';
+                ctx.fillRect(0, 0, canvas.width, canvas.height);
+                
+                // 绘制网格（战场）
+                ctx.strokeStyle = 'rgba(255,255,255,0.03)';
+                for (let i = 0; i < canvas.width; i += 50) {
+                    ctx.beginPath();
+                    ctx.moveTo(i, 0);
+                    ctx.lineTo(i, canvas.height);
+                    ctx.stroke();
+                }
+                
+                // 绘制基地
+                buildings.forEach(b => {
+                    const gradient = ctx.createLinearGradient(b.x-30, b.y-30, b.x+30, b.y+30);
+                    gradient.addColorStop(0, '#339af0');
+                    gradient.addColorStop(1, '#1864ab');
+                    ctx.fillStyle = gradient;
+                    ctx.fillRect(b.x - 30, b.y - 30, 60, 60);
+                    ctx.strokeStyle = '#74c0fc';
+                    ctx.lineWidth = 2;
+                    ctx.strokeRect(b.x - 30, b.y - 30, 60, 60);
+                    
+                    // 基地标志
+                    ctx.fillStyle = '#fff';
+                    ctx.font = '20px Arial';
+                    ctx.fillText('🏭', b.x - 10, b.y + 5);
+                });
+                
+                // 更新和绘制单位
+                units = units.filter(u => u.hp > 0);
+                enemies = enemies.filter(e => e.hp > 0);
+                
+                units.forEach(u => { u.update(); u.draw(); });
+                enemies.forEach(e => { e.update(); e.draw(); });
+                
+                // 生成敌人
+                if (!isPaused) {
+                    spawnEnemy();
+                    gameTime++;
+                    if (gameTime % 600 === 0) {
+                        score += 100;
+                        resources += 50;
+                        updateScore();
+                    }
+                }
+                
+                // 检查游戏结束
+                if (buildings[0].hp <= 0) {
+                    gameOver();
+                    return;
+                }
+                
+                // 玩家生成单位（点击）
+                canvas.onclick = (e) => {
+                    if (resources >= 100 && !isPaused) {
+                        const rect = canvas.getBoundingClientRect();
+                        units.push(new Unit(e.clientX - rect.left, e.clientY - rect.top));
+                        resources -= 100;
+                    }
+                };
+            }
+            
+            function gameLoop() {
+                if (!isPaused) draw();
+                gameInstance = requestAnimationFrame(gameLoop);
+            }
+            
+            gameLoop();
+        }
+
+        // 3. 贪吃蛇 (Snake)
+        function initSnake(canvas, ctx) {
+            const gridSize = 20;
+            const tileCountX = Math.floor(canvas.width / gridSize);
+            const tileCountY = Math.floor(canvas.height / gridSize);
+            
+            let snake = [{x: 10, y: 10}];
+            let direction = {x: 0, y: 0};
+            let food = randomFood();
+            let speed = 7;
+            
+            function randomFood() {
+                return {
+                    x: Math.floor(Math.random() * tileCountX),
+                    y: Math.floor(Math.random() * tileCountY),
+                    color: `hsl(${Math.random()*360},100%,50%)`
+                };
+            }
+            
+            function update() {
+                if (isPaused) return;
+                
+                const head = {x: snake[0].x + direction.x, y: snake[0].y + direction.y};
+                
+                // 穿墙
+                if (head.x < 0) head.x = tileCountX - 1;
+                if (head.x >= tileCountX) head.x = 0;
+                if (head.y < 0) head.y = tileCountY - 1;
+                if (head.y >= tileCountY) head.y = 0;
+                
+                // 撞身
+                if (snake.some(s => s.x === head.x && s.y === head.y)) {
+                    gameOver();
+                    return;
+                }
+                
+                snake.unshift(head);
+                
+                // 吃食物
+                if (head.x === food.x && head.y === food.y) {
+                    score += 10;
+                    food = randomFood();
+                    if (snake.length % 5 === 0) speed++;
+                    updateScore();
+                } else {
+                    snake.pop();
+                }
+            }
+            
+            function draw() {
+                // 渐变背景清除
+                ctx.fillStyle = 'rgba(0,0,0,0.4)';
+                ctx.fillRect(0, 0, canvas.width, canvas.height);
+                
+                // 绘制食物（发光效果）
+                ctx.shadowBlur = 20;
+                ctx.shadowColor = food.color;
+                ctx.fillStyle = food.color;
+                ctx.beginPath();
+                ctx.arc(
+                    food.x * gridSize + gridSize/2, 
+                    food.y * gridSize + gridSize/2, 
+                    gridSize/2 - 2, 0, Math.PI*2
+                );
+                ctx.fill();
+                ctx.shadowBlur = 0;
+                
+                // 绘制蛇（Liquid Glass效果）
+                snake.forEach((segment, i) => {
+                    const alpha = 1 - (i / snake.length) * 0.5;
+                    ctx.fillStyle = `rgba(57, 255, 20, ${alpha})`;
+                    ctx.shadowBlur = i === 0 ? 20 : 0;
+                    ctx.shadowColor = '#39ff14';
+                    
+                    ctx.fillRect(
+                        segment.x * gridSize + 1, 
+                        segment.y * gridSize + 1, 
+                        gridSize - 2, 
+                        gridSize - 2
+                    );
+                    
+                    if (i === 0) {
+                        // 蛇眼
+                        ctx.fillStyle = '#000';
+                        ctx.fillRect(segment.x * gridSize + 5, segment.y * gridSize + 5, 4, 4);
+                        ctx.fillRect(segment.x * gridSize + 11, segment.y * gridSize + 5, 4, 4);
+                    }
+                });
+                ctx.shadowBlur = 0;
+            }
+            
+            // 控制
+            document.onkeydown = (e) => {
+                switch(e.key) {
+                    case 'ArrowUp': if (direction.y === 0) direction = {x: 0, y: -1}; break;
+                    case 'ArrowDown': if (direction.y === 0) direction = {x: 0, y: 1}; break;
+                    case 'ArrowLeft': if (direction.x === 0) direction = {x: -1, y: 0}; break;
+                    case 'ArrowRight': if (direction.x === 0) direction = {x: 1, y: 0}; break;
+                }
+            };
+            
+            // 触摸控制（滑动）
+            let touchStart = null;
+            canvas.ontouchstart = (e) => {
+                touchStart = {x: e.touches[0].clientX, y: e.touches[0].clientY};
+            };
+            canvas.ontouchend = (e) => {
+                if (!touchStart) return;
+                const dx = e.changedTouches[0].clientX - touchStart.x;
+                const dy = e.changedTouches[0].clientY - touchStart.y;
+                if (Math.abs(dx) > Math.abs(dy)) {
+                    if (dx > 0 && direction.x === 0) direction = {x: 1, y: 0};
+                    else if (dx < 0 && direction.x === 0) direction = {x: -1, y: 0};
+                } else {
+                    if (dy > 0 && direction.y === 0) direction = {x: 0, y: 1};
+                    else if (dy < 0 && direction.y === 0) direction = {x: 0, y: -1};
+                }
+                touchStart = null;
+            };
+            
+            let lastTime = 0;
+            function loop(timestamp) {
+                if (timestamp - lastTime > 1000/speed) {
+                    update();
+                    lastTime = timestamp;
+                }
+                draw();
+                gameInstance = requestAnimationFrame(loop);
+            }
+            loop(0);
+        }
+
+        // 4. 太空射击 (Space Shooter)
+        function initShooter(canvas, ctx) {
+            let player = {x: canvas.width/2, y: canvas.height - 100, bullets: []};
+            let enemies = [];
+            let stars = Array(100).fill().map(() => ({
+                x: Math.random() * canvas.width,
+                y: Math.random() * canvas.height,
+                speed: Math.random() * 3 + 1
+            }));
+            
+            function drawStars() {
+                ctx.fillStyle = '#fff';
+                stars.forEach(star => {
+                    ctx.globalAlpha = Math.random() * 0.5 + 0.5;
+                    ctx.fillRect(star.x, star.y, 2, 2);
+                    if (!isPaused) {
+                        star.y += star.speed;
+                        if (star.y > canvas.height) star.y = 0;
+                    }
+                });
+                ctx.globalAlpha = 1;
+            }
+            
+            function drawPlayer() {
+                // 飞船（Liquid Glass风格）
+                ctx.save();
+                ctx.translate(player.x, player.y);
+                
+                // 发光效果
+                ctx.shadowBlur = 30;
+                ctx.shadowColor = '#00f3ff';
+                
+                // 飞船主体
+                const gradient = ctx.createLinearGradient(0, -20, 0, 20);
+                gradient.addColorStop(0, '#00f3ff');
+                gradient.addColorStop(1, '#0066cc');
+                ctx.fillStyle = gradient;
+                ctx.beginPath();
+                ctx.moveTo(0, -30);
+                ctx.lineTo(-15, 20);
+                ctx.lineTo(0, 10);
+                ctx.lineTo(15, 20);
+                ctx.closePath();
+                ctx.fill();
+                
+                // 引擎火焰
+                if (!isPaused) {
+                    ctx.fillStyle = `rgba(255, 100, 0, ${Math.random()})`;
+                    ctx.beginPath();
+                    ctx.moveTo(-5, 20);
+                    ctx.lineTo(0, 35 + Math.random() * 10);
+                    ctx.lineTo(5, 20);
+                    ctx.fill();
+                }
+                
+                ctx.restore();
+                ctx.shadowBlur = 0;
+            }
+            
+            function update() {
+                if (isPaused) return;
+                
+                // 更新子弹
+                player.bullets = player.bullets.filter(b => {
+                    b.y -= 10;
+                    return b.y > 0;
+                });
+                
+                // 生成敌人
+                if (Math.random() < 0.02 + (level * 0.005)) {
+                    enemies.push({
+                        x: Math.random() * (canvas.width - 40) + 20,
+                        y: -30,
+                        hp: 2,
+                        maxHp: 2
+                    });
+                }
+                
+                // 更新敌人
+                enemies = enemies.filter(e => {
+                    e.y += 2;
+                    
+                    // 碰撞检测
+                    player.bullets.forEach((b, bi) => {
+                        if (Math.hypot(b.x - e.x, b.y - e.y) < 20) {
+                            e.hp--;
+                            player.bullets.splice(bi, 1);
+                            if (e.hp <= 0) {
+                                score += 20;
+                                updateScore();
+                            }
+                        }
+                    });
+                    
+                    // 撞玩家
+                    if (Math.hypot(e.x - player.x, e.y - player.y) < 30) {
+                        gameOver();
+                        return false;
+                    }
+                    
+                    return e.y < canvas.height && e.hp > 0;
+                });
+                
+                // 升级检测
+                const newLevel = Math.floor(score / 500) + 1;
+                if (newLevel > level) {
+                    level = newLevel;
+                    updateScore();
+                }
+            }
+            
+            function draw() {
+                ctx.fillStyle = 'rgba(0,0,0,0.3)';
+                ctx.fillRect(0, 0, canvas.width, canvas.height);
+                
+                drawStars();
+                drawPlayer();
+                
+                // 绘制子弹
+                ctx.fillStyle = '#ffea00';
+                ctx.shadowBlur = 10;
+                ctx.shadowColor = '#ffea00';
+                player.bullets.forEach(b => {
+                    ctx.fillRect(b.x - 2, b.y - 10, 4, 20);
+                });
+                
+                // 绘制敌人
+                enemies.forEach(e => {
+                    const gradient = ctx.createRadialGradient(e.x, e.y, 0, e.x, e.y, 20);
+                    gradient.addColorStop(0, '#ff2d95');
+                    gradient.addColorStop(1, '#990000');
+                    ctx.fillStyle = gradient;
+                    ctx.beginPath();
+                    ctx.arc(e.x, e.y, 15, 0, Math.PI*2);
+                    ctx.fill();
+                    
+                    // 敌人血条
+                    ctx.fillStyle = '#ff0000';
+                    ctx.fillRect(e.x - 15, e.y - 25, 30, 4);
+                    ctx.fillStyle = '#00ff00';
+                    ctx.fillRect(e.x - 15, e.y - 25, 30 * (e.hp / e.maxHp), 4);
+                });
+                ctx.shadowBlur = 0;
+                
+                update();
+            }
+            
+            // 控制
+            let keys = {};
+            document.onkeydown = (e) => {
+                keys[e.key] = true;
+                if (e.key === ' ') {
+                    player.bullets.push({x: player.x, y: player.y - 30});
+                }
+            };
+            document.onkeyup = (e) => keys[e.key] = false;
+            
+            // 平滑移动
+            setInterval(() => {
+                if (isPaused) return;
+                if (keys['ArrowLeft'] && player.x > 20) player.x -= 8;
+                if (keys['ArrowRight'] && player.x < canvas.width - 20) player.x += 8;
+            }, 1000/60);
+            
+            // 触摸控制
+            canvas.ontouchmove = (e) => {
+                e.preventDefault();
+                const rect = canvas.getBoundingClientRect();
+                player.x = e.touches[0].clientX - rect.left;
+            };
+            canvas.ontouchstart = (e) => {
+                player.bullets.push({x: player.x, y: player.y - 30});
+            };
+            
+            function loop() {
+                draw();
+                gameInstance = requestAnimationFrame(loop);
+            }
+            loop();
+        }
+
+        // 5. 记忆翻牌 (Memory)
+        function initMemory(canvas, ctx) {
+            const cols = 4;
+            const rows = 4;
+            const cards = [];
+            let flipped = [];
+            let matched = 0;
+            let canFlip = true;
+            
+            // 生成卡片对
+            const symbols = ['🎮', '🎯', '🎲', '🎸', '🚀', '💎', '🔥', '⚡'];
+            const deck = [...symbols, ...symbols].sort(() => Math.random() - 0.5);
+            
+            const cardWidth = (canvas.width - 100) / cols;
+            const cardHeight = (canvas.height - 100) / rows;
+            
+            for (let i = 0; i < cols * rows; i++) {
+                cards.push({
+                    x: 50 + (i % cols) * cardWidth,
+                    y: 50 + Math.floor(i / cols) * cardHeight,
+                    symbol: deck[i],
+                    flipped: false,
+                    matched: false,
+                    scale: 1
+                });
+            }
+            
+            function drawCard(card) {
+                ctx.save();
+                ctx.translate(card.x + cardWidth/2, card.y + cardHeight/2);
+                ctx.scale(card.scale, 1);
+                
+                // Liquid Glass 卡片效果
+                if (card.flipped || card.matched) {
+                    // 正面
+                    const gradient = ctx.createLinearGradient(-cardWidth/2, -cardHeight/2, cardWidth/2, cardHeight/2);
+                    if (card.matched) {
+                        gradient.addColorStop(0, 'rgba(57,255,20,0.8)');
+                        gradient.addColorStop(1, 'rgba(57,255,20,0.4)');
+                    } else {
+                        gradient.addColorStop(0, 'rgba(255,255,255,0.9)');
+                        gradient.addColorStop(1, 'rgba(255,255,255,0.6)');
+                    }
+                    ctx.fillStyle = gradient;
+                    ctx.shadowBlur = 20;
+                    ctx.shadowColor = card.matched ? '#39ff14' : '#fff';
+                } else {
+                    // 背面
+                    const gradient = ctx.createLinearGradient(-cardWidth/2, -cardHeight/2, cardWidth/2, cardHeight/2);
+                    gradient.addColorStop(0, 'rgba(0,243,255,0.6)');
+                    gradient.addColorStop(1, 'rgba(179,0,255,0.6)');
+                    ctx.fillStyle = gradient;
+                    ctx.shadowBlur = 10;
+                    ctx.shadowColor = 'rgba(0,243,255,0.5)';
+                }
+                
+                ctx.beginPath();
+                ctx.roundRect(-cardWidth/2 + 5, -cardHeight/2 + 5, cardWidth - 10, cardHeight - 10, 15);
+                ctx.fill();
+                
+                // 边框
+                ctx.strokeStyle = 'rgba(255,255,255,0.5)';
+                ctx.lineWidth = 2;
+                ctx.stroke();
+                
+                // 内容
+                if (card.flipped || card.matched) {
+                    ctx.fillStyle = '#000';
+                    ctx.font = `${cardHeight/2}px Arial`;
+                    ctx.textAlign = 'center';
+                    ctx.textBaseline = 'middle';
+                    ctx.fillText(card.symbol, 0, 0);
+                } else {
+                    // 背面图案
+                    ctx.fillStyle = 'rgba(255,255,255,0.3)';
+                    ctx.beginPath();
+                    ctx.arc(0, 0, 20, 0, Math.PI*2);
+                    ctx.fill();
+                }
+                
+                ctx.restore();
+                ctx.shadowBlur = 0;
+            }
+            
+            function draw() {
+                ctx.fillStyle = 'rgba(0,0,0,0.2)';
+                ctx.fillRect(0, 0, canvas.width, canvas.height);
+                
+                cards.forEach(card => {
+                    if (card.matched) card.scale = 0.9;
+                    drawCard(card);
+                });
+            }
+            
+            canvas.onclick = (e) => {
+                if (!canFlip || isPaused) return;
+                
+                const rect = canvas.getBoundingClientRect();
+                const x = e.clientX - rect.left;
+                const y = e.clientY - rect.top;
+                
+                cards.forEach(card => {
+                    if (x >= card.x && x <= card.x + cardWidth &&
+                        y >= card.y && y <= card.y + cardHeight &&
+                        !card.flipped && !card.matched) {
+                        
+                        card.flipped = true;
+                        flipped.push(card);
+                        
+                        if (flipped.length === 2) {
+                            canFlip = false;
+                            if (flipped[0].symbol === flipped[1].symbol) {
+                                flipped[0].matched = true;
+                                flipped[1].matched = true;
+                                matched += 2;
+                                score += 50;
+                                flipped = [];
+                                canFlip = true;
+                                updateScore();
+                                
+                                if (matched === cards.length) {
+                                    setTimeout(() => gameOver(true), 500);
+                                }
+                            } else {
+                                setTimeout(() => {
+                                    flipped[0].flipped = false;
+                                    flipped[1].flipped = false;
+                                    flipped = [];
+                                    canFlip = true;
+                                }, 1000);
+                            }
+                        }
+                    }
+                });
+            };
+            
+            function loop() {
+                draw();
+                gameInstance = requestAnimationFrame(loop);
+            }
+            loop();
+        }
+
+        // 6. 霓虹打砖块 (原有)
+        function initBreakout(canvas, ctx) {
+            let paddle = {x: canvas.width/2 - 60, y: canvas.height - 40, width: 120, height: 15};
+            let ball = {x: canvas.width/2, y: canvas.height/2, dx: 5, dy: -5, radius: 8};
+            let bricks = [];
+            const brickColors = ['#ff2d95', '#00f3ff', '#39ff14', '#fff01f', '#b300ff'];
+            
+            // 初始化砖块
+            for (let r = 0; r < 5; r++) {
+                for (let c = 0; c < 8; c++) {
+                    bricks.push({
+                        x: 60 + c * (canvas.width - 120) / 8,
+                        y: 60 + r * 35,
+                        width: (canvas.width - 140) / 8,
+                        height: 25,
+                        color: brickColors[r],
+                        hit: false
+                    });
+                }
+            }
+            
+            function draw() {
+                ctx.fillStyle = 'rgba(0,0,0,0.3)';
+                ctx.fillRect(0, 0, canvas.width, canvas.height);
+                
+                // 绘制砖块（Liquid Glass效果）
+                bricks.forEach(brick => {
+                    if (!brick.hit) {
+                        ctx.fillStyle = brick.color + '40';
+                        ctx.fillRect(brick.x, brick.y, brick.width, brick.height);
+                        ctx.strokeStyle = brick.color;
+                        ctx.lineWidth = 2;
+                        ctx.strokeRect(brick.x, brick.y, brick.width, brick.height);
+                        ctx.shadowBlur = 15;
+                        ctx.shadowColor = brick.color;
+                    }
+                });
+                ctx.shadowBlur = 0;
+                
+                // 绘制挡板
+                const padGrad = ctx.createLinearGradient(paddle.x, paddle.y, paddle.x, paddle.y + paddle.height);
+                padGrad.addColorStop(0, 'rgba(0,243,255,0.8)');
+                padGrad.addColorStop(1, 'rgba(0,100,255,0.8)');
+                ctx.fillStyle = padGrad;
+                ctx.shadowBlur = 20;
+                ctx.shadowColor = '#00f3ff';
+                ctx.beginPath();
+                ctx.roundRect(paddle.x, paddle.y, paddle.width, paddle.height, 8);
+                ctx.fill();
+                
+                // 绘制球
+                ctx.beginPath();
+                ctx.arc(ball.x, ball.y, ball.radius, 0, Math.PI*2);
+                ctx.fillStyle = '#fff';
+                ctx.shadowBlur = 20;
+                ctx.shadowColor = '#fff';
+                ctx.fill();
+                ctx.shadowBlur = 0;
+                
+                if (isPaused) return;
+                
+                // 更新球
+                ball.x += ball.dx;
+                ball.y += ball.dy;
+                
+                // 碰撞检测
+                if (ball.x + ball.radius > canvas.width || ball.x - ball.radius < 0) ball.dx = -ball.dx;
+                if (ball.y - ball.radius < 0) ball.dy = -ball.dy;
+                
+                // 挡板碰撞
+                if (ball.y + ball.radius > paddle.y && ball.x > paddle.x && ball.x < paddle.x + paddle.width) {
+                    ball.dy = -ball.dy;
+                    ball.y = paddle.y - ball.radius;
+                    // 根据击中位置改变角度
+                    const hitPos = (ball.x - paddle.x) / paddle.width;
+                    ball.dx = 8 * (hitPos - 0.5);
+                }
+                
+                // 砖块碰撞
+                bricks.forEach(brick => {
+                    if (!brick.hit && ball.x > brick.x && ball.x < brick.x + brick.width &&
+                        ball.y > brick.y && ball.y < brick.y + brick.height) {
+                        brick.hit = true;
+                        ball.dy = -ball.dy;
+                        score += 10;
+                        updateScore();
+                    }
+                });
+                
+                // 游戏结束
+                if (ball.y > canvas.height) gameOver();
+                if (bricks.every(b => b.hit)) gameOver(true);
+            }
+            
+            // 控制
+            canvas.onmousemove = (e) => {
+                const rect = canvas.getBoundingClientRect();
+                paddle.x = e.clientX - rect.left - paddle.width/2;
+            };
+            canvas.ontouchmove = (e) => {
+                e.preventDefault();
+                const rect = canvas.getBoundingClientRect();
+                paddle.x = e.touches[0].clientX - rect.left - paddle.width/2;
+            };
+            
+            function loop() {
+                draw();
+                gameInstance = requestAnimationFrame(loop);
+            }
+            loop();
+        }
+
+        // 7. 色彩极速 (原有)
+        function initColorRush(canvas, ctx) {
+            let targetColor = '';
+            let timeLeft = 30;
+            let colors = ['#ff2d95', '#00f3ff', '#39ff14', '#fff01f'];
+            let blocks = [];
+            
+            function newRound() {
+                targetColor = colors[Math.floor(Math.random() * colors.length)];
+                const correctIndex = Math.floor(Math.random() * 4);
+                blocks = colors.map((c, i) => ({
+                    color: i === correctIndex ? targetColor : colors[Math.floor(Math.random() * colors.length)],
+                    x: (i % 2) * (canvas.width/2),
+                    y: Math.floor(i / 2) * (canvas.height/2) + 80,
+                    width: canvas.width/2 - 10,
+                    height: canvas.height/2 - 90
+                }));
+            }
+            
+            newRound();
+            
+            function draw() {
+                ctx.fillStyle = 'rgba(0,0,0,0.4)';
+                ctx.fillRect(0, 0, canvas.width, canvas.height);
+                
+                // 目标颜色提示
+                ctx.fillStyle = targetColor;
+                ctx.font = 'bold 40px Arial';
+                ctx.textAlign = 'center';
+                ctx.shadowBlur = 30;
+                ctx.shadowColor = targetColor;
+                ctx.fillText('CLICK THIS COLOR!', canvas.width/2, 50);
+                ctx.shadowBlur = 0;
+                
+                // 绘制色块（Liquid Glass效果）
+                blocks.forEach(block => {
+                    const grad = ctx.createLinearGradient(block.x, block.y, block.x + block.width, block.y + block.height);
+                    grad.addColorStop(0, block.color + 'cc');
+                    grad.addColorStop(1, block.color + '66');
+                    ctx.fillStyle = grad;
+                    ctx.shadowBlur = 20;
+                    ctx.shadowColor = block.color;
+                    ctx.beginPath();
+                    ctx.roundRect(block.x + 5, block.y + 5, block.width - 10, block.height - 10, 20);
+                    ctx.fill();
+                });
+                ctx.shadowBlur = 0;
+            }
+            
+            canvas.onclick = (e) => {
+                if (isPaused) return;
+                const rect = canvas.getBoundingClientRect();
+                const x = e.clientX - rect.left;
+                const y = e.clientY - rect.top;
+                
+                blocks.forEach(block => {
+                    if (x >= block.x && x <= block.x + block.width &&
+                        y >= block.y && y <= block.y + block.height) {
+                        if (block.color === targetColor) {
+                            score += 10;
+                            timeLeft += 2;
+                            updateScore();
+                            newRound();
+                        } else {
+                            timeLeft -= 3;
+                        }
+                    }
+                });
+            };
+            
+            const timer = setInterval(() => {
+                if (!isPaused && currentGame === 'colorrush') {
+                    timeLeft--;
+                    if (timeLeft <= 0) {
+                        clearInterval(timer);
+                        gameOver();
+                    }
+                } else if (currentGame !== 'colorrush') {
+                    clearInterval(timer);
+                }
+            }, 1000);
+            
+            function loop() {
+                if (currentGame === 'colorrush') {
+                    draw();
+                    gameInstance = requestAnimationFrame(loop);
+                }
+            }
+            loop();
+        }
+
+        // 8. 吃豆人 (Pacman简化版)
+        function initPacman(canvas, ctx) {
+            const tileSize = 30;
+            const cols = Math.floor(canvas.width / tileSize);
+            const rows = Math.floor(canvas.height / tileSize);
+            
+            // 地图生成
+            let map = [];
+            for (let r = 0; r < rows; r++) {
+                let row = [];
+                for (let c = 0; c < cols; c++) {
+                    if (r === 0 || r === rows-1 || c === 0 || c === cols-1 || (r%3===0 && c%3===0)) {
+                        row.push(1); // 墙
+                    } else {
+                        row.push(0); // 豆子
+                    }
+                }
+                map.push(row);
+            }
+            
+            let pacman = {x: 1, y: 1, dx: 0, dy: 0, mouth: 0};
+            let ghosts = [
+                {x: cols-2, y: rows-2, color: '#ff0000'},
+                {x: cols-2, y: 1, color: '#ffb8ff'}
+            ];
+            
+            function drawMap() {
+                for (let r = 0; r < rows; r++) {
+                    for (let c = 0; c < cols; c++) {
+                        if (map[r][c] === 1) {
+                            // 墙壁 - Liquid Glass风格
+                            const grad = ctx.createLinearGradient(c*tileSize, r*tileSize, (c+1)*tileSize, (r+1)*tileSize);
+                            grad.addColorStop(0, 'rgba(0,150,255,0.8)');
+                            grad.addColorStop(1, 'rgba(0,50,150,0.8)');
+                            ctx.fillStyle = grad;
+                            ctx.fillRect(c*tileSize, r*tileSize, tileSize-2, tileSize-2);
+                        } else if (map[r][c] === 0) {
+                            // 豆子
+                            ctx.fillStyle = '#fff01f';
+                            ctx.beginPath();
+                            ctx.arc(c*tileSize + tileSize/2, r*tileSize + tileSize/2, 3, 0, Math.PI*2);
+                            ctx.fill();
+                        }
+                    }
+                }
+            }
+            
+            function drawPacman() {
+                ctx.fillStyle = '#fff01f';
+                ctx.shadowBlur = 20;
+                ctx.shadowColor = '#fff01f';
+                ctx.beginPath();
+                const x = pacman.x * tileSize + tileSize/2;
+                const y = pacman.y * tileSize + tileSize/2;
+                const mouthAngle = Math.abs(Math.sin(pacman.mouth)) * 0.2;
+                ctx.arc(x, y, tileSize/2 - 2, mouthAngle, Math.PI*2 - mouthAngle);
+                ctx.lineTo(x, y);
+                ctx.fill();
+                ctx.shadowBlur = 0;
+            }
+            
+            function drawGhosts() {
+                ghosts.forEach(ghost => {
+                    const grad = ctx.createLinearGradient(ghost.x*tileSize, ghost.y*tileSize, ghost.x*tileSize, (ghost.y+1)*tileSize);
+                    grad.addColorStop(0, ghost.color);
+                    grad.addColorStop(1, ghost.color + '88');
+                    ctx.fillStyle = grad;
+                    ctx.shadowBlur = 15;
+                    ctx.shadowColor = ghost.color;
+                    
+                    const x = ghost.x * tileSize + 5;
+                    const y = ghost.y * tileSize + 5;
+                    ctx.beginPath();
+                    ctx.arc(x + tileSize/2 - 5, y + tileSize/2 - 5, tileSize/2 - 5, Math.PI, 0);
+                    ctx.lineTo(x + tileSize - 10, y + tileSize - 10);
+                    ctx.lineTo(x, y + tileSize - 10);
+                    ctx.fill();
+                    ctx.shadowBlur = 0;
+                });
+            }
+            
+            function update() {
+                if (isPaused) return;
+                
+                // 移动Pacman
+                if (pacman.dx !== 0 || pacman.dy !== 0) {
+                    const nx = pacman.x + pacman.dx;
+                    const ny = pacman.y + pacman.dy;
+                    if (map[ny][nx] !== 1) {
+                        pacman.x = nx;
+                        pacman.y = ny;
+                        if (map[ny][nx] === 0) {
+                            map[ny][nx] = 2; // 吃掉
+                            score += 10;
+                            updateScore();
+                        }
+                        pacman.mouth += 0.2;
+                    }
+                }
+                
+                // 移动幽灵（简单AI）
+                ghosts.forEach(ghost => {
+                    const dx = pacman.x - ghost.x;
+                    const dy = pacman.y - ghost.y;
+                    const moves = [];
+                    if (Math.abs(dx) > Math.abs(dy)) {
+                        moves.push({x: Math.sign(dx), y: 0});
+                        moves.push({x: 0, y: Math.sign(dy)});
+                    } else {
+                        moves.push({x: 0, y: Math.sign(dy)});
+                        moves.push({x: Math.sign(dx), y: 0});
+                    }
+                    
+                    for (let move of moves) {
+                        const nx = ghost.x + move.x;
+                        const ny = ghost.y + move.y;
+                        if (map[ny][nx] !== 1) {
+                            ghost.x = nx;
+                            ghost.y = ny;
+                            break;
+                        }
+                    }
+                    
+                    // 碰撞检测
+                    if (ghost.x === pacman.x && ghost.y === pacman.y) {
+                        gameOver();
+                    }
+                });
+                
+                // 检查胜利
+                if (!map.some(row => row.includes(0))) {
+                    gameOver(true);
+                }
+            }
+            
+            document.onkeydown = (e) => {
+                switch(e.key) {
+                    case 'ArrowUp': pacman.dx = 0; pacman.dy = -1; break;
+                    case 'ArrowDown': pacman.dx = 0; pacman.dy = 1; break;
+                    case 'ArrowLeft': pacman.dx = -1; pacman.dy = 0; break;
+                    case 'ArrowRight': pacman.dx = 1; pacman.dy = 0; break;
+                }
+            };
+            
+            // 触摸控制
+            let touchStart = null;
+            canvas.ontouchstart = (e) => {
+                touchStart = {x: e.touches[0].clientX, y: e.touches[0].clientY};
+            };
+            canvas.ontouchend = (e) => {
+                if (!touchStart) return;
+                const dx = e.changedTouches[0].clientX - touchStart.x;
+                const dy = e.changedTouches[0].clientY - touchStart.y;
+                if (Math.abs(dx) > Math.abs(dy)) {
+                    pacman.dx = dx > 0 ? 1 : -1;
+                    pacman.dy = 0;
+                } else {
+                    pacman.dx = 0;
+                    pacman.dy = dy > 0 ? 1 : -1;
+                }
+            };
+            
+            function loop() {
+                ctx.fillStyle = 'rgba(0,0,0,0.4)';
+                ctx.fillRect(0, 0, canvas.width, canvas.height);
+                
+                drawMap();
+                drawPacman();
+                drawGhosts();
+                update();
+                
+                gameInstance = requestAnimationFrame(loop);
+            }
+            loop();
+        }
+
+        // 9. 粒子绘画 (原有)
+        function initParticles(canvas, ctx) {
+            let particles = [];
+            let hue = 0;
+            let isDrawing = false;
+            
+            class Particle {
+                constructor(x, y) {
+                    this.x = x;
+                    this.y = y;
+                    this.size = Math.random() * 5 + 2;
+                    this.speedX = Math.random() * 4 - 2;
+                    this.speedY = Math.random() * 4 - 2;
+                    this.color = `hsl(${hue}, 100%, 50%)`;
+                    this.life = 1;
+                }
+                update() {
+                    this.x += this.speedX;
+                    this.y += this.speedY;
+                    this.life -= 0.02;
+                    this.size *= 0.95;
+                }
+                draw() {
+                    ctx.fillStyle = this.color;
+                    ctx.globalAlpha = this.life;
+                    ctx.beginPath();
+                    ctx.arc(this.x, this.y, this.size, 0, Math.PI*2);
+                    ctx.fill();
+                    ctx.globalAlpha = 1;
+                }
+            }
+            
+            function animate() {
+                ctx.fillStyle = 'rgba(0,0,0,0.05)';
+                ctx.fillRect(0, 0, canvas.width, canvas.height);
+                
+                particles = particles.filter(p => p.life > 0);
+                particles.forEach(p => {
+                    p.update();
+                    p.draw();
+                });
+                
+                hue += 2;
+                gameInstance = requestAnimationFrame(animate);
+            }
+            
+            canvas.onmousedown = () => isDrawing = true;
+            canvas.onmouseup = () => isDrawing = false;
+            canvas.onmousemove = (e) => {
+                if (isDrawing) {
+                    const rect = canvas.getBoundingClientRect();
+                    for (let i = 0; i < 3; i++) {
+                        particles.push(new Particle(
+                            e.clientX - rect.left,
+                            e.clientY - rect.top
+                        ));
+                    }
+                }
+            };
+            
+            canvas.ontouchstart = () => isDrawing = true;
+            canvas.ontouchend = () => isDrawing = false;
+            canvas.ontouchmove = (e) => {
+                e.preventDefault();
+                const rect = canvas.getBoundingClientRect();
+                for (let i = 0; i < 3; i++) {
+                    particles.push(new Particle(
+                        e.touches[0].clientX - rect.left,
+                        e.touches[0].clientY - rect.top
+                    ));
+                }
+            };
+            
+            animate();
+        }
+
+        // 工具函数
+        function updateScore() {
+            document.getElementById('score').textContent = score;
+            document.getElementById('level').textContent = level;
+            if (!highScores[currentGame] || score > highScores[currentGame]) {
+                highScores[currentGame] = score;
+                localStorage.setItem('liquidGlassHighScores', JSON.stringify(highScores));
+            }
+            document.getElementById('highScore').textContent = highScores[currentGame] || 0;
+        }
+
+        function gameOver(win=false) {
+            document.getElementById('overlayTitle').textContent = win ? '🎉 胜利!' : '游戏结束';
+            document.getElementById('overlayText').textContent = `最终得分: ${score}`;
+            document.getElementById('overlay').classList.add('show');
+            cancelAnimationFrame(gameInstance);
+        }
+
+        function startGame() {
+            document.getElementById('overlay').classList.remove('show');
+            initGame(currentGame);
+        }
+
+        function togglePause() {
+            isPaused = !isPaused;
+        }
+
+        function toggleMute() {
+            isMuted = !isMuted;
+        }
+
+        function showHome() {
+            alert('欢迎来到 Liquid Glass 游戏中心！');
+        }
+
+        function toggleFullscreen() {
+            if (!document.fullscreenElement) {
+                document.documentElement.requestFullscreen();
+            } else {
+                document.exitFullscreen();
+            }
+        }
+
+        // 窗口调整
+        window.addEventListener('resize', () => {
+            const canvas = document.getElementById('gameCanvas');
+            const container = document.querySelector('.canvas-container');
+            canvas.width = container.offsetWidth;
+            canvas.height = container.offsetHeight;
+            // 重新加载当前游戏以适配新尺寸
+            setTimeout(() => initGame(currentGame), 100);
+        });
+    </script>
+</body>
+</html>
